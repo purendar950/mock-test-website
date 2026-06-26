@@ -1,0 +1,27 @@
+{
+  "id": "sample-quiz",
+  "title": "General Knowledge Mock Test",
+  "description": "A sample mock test showing the required quiz JSON file format.",
+  "durationMinutes": 15,
+  "passingScore": 50,
+  "questions": [
+    {
+      "question": "Which planet is known as the Red Planet?",
+      "options": ["Earth", "Mars", "Jupiter", "Venus"],
+      "correctIndex": 1,
+      "explanation": "Mars is called the Red Planet because of iron oxide on its surface."
+    },
+    {
+      "question": "What is 12 × 8?",
+      "options": ["86", "94", "96", "108"],
+      "correctIndex": 2,
+      "explanation": "12 multiplied by 8 equals 96."
+    },
+    {
+      "question": "HTML is used mainly for what?",
+      "options": ["Database queries", "Page structure", "Server hosting", "Image editing"],
+      "correctIndex": 1,
+      "explanation": "HTML defines the structure and content of web pages."
+    }
+  ]
+}

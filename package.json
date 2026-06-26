@@ -1,0 +1,15 @@
+{
+  "name": "mock-test-complete",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy:firebase": "firebase deploy",
+    "deploy:github": "echo 'Push this folder to GitHub and enable GitHub Pages.'"
+  },
+  "devDependencies": {
+    "serve": "latest",
+    "firebase-tools": "latest"
+  }
+}

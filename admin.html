@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Control Panel - Mock Test Complete</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Admin Control Panel</h1>
+      <p>Create, import, export, and publish mock test quizzes.</p>
+    </div>
+    <nav>
+      <a href="index.html">Student</a>
+      <a href="admin.html">Admin</a>
+      <button id="themeToggle" type="button">Dark</button>
+    </nav>
+  </header>
+
+  <main class="container grid-2">
+    <section class="card">
+      <span class="badge">Quiz Builder</span>
+      <h2>Create quiz</h2>
+      <form id="quizForm" class="stack">
+        <label>Quiz ID<input id="adminQuizId" required value="sample-quiz" /></label>
+        <label>Title<input id="adminTitle" required value="General Knowledge Mock Test" /></label>
+        <label>Description<textarea id="adminDesc">A sample test for practice.</textarea></label>
+        <label>Duration minutes<input id="adminDuration" type="number" min="1" value="15" /></label>
+        <label>Passing score %<input id="adminPass" type="number" min="0" max="100" value="50" /></label>
+        <label>Storage target
+          <select id="adminTarget">
+            <option value="download">Download JSON only</option>
+            <option value="firebase">Publish to Firebase</option>
+            <option value="supabase">Publish to Supabase</option>
+          </select>
+        </label>
+      </form>
+    </section>
+
+    <section class="card">
+      <span class="badge">Import</span>
+      <h2>Upload quiz file</h2>
+      <p>Upload a JSON quiz file in the included format. It will populate the editor.</p>
+      <input id="fileInput" type="file" accept="application/json,.json" />
+      <textarea id="jsonEditor" class="json-editor" spellcheck="false"></textarea>
+      <div class="actions wrap">
+        <button id="loadSampleBtn" type="button">Load sample</button>
+        <button id="validateBtn" type="button">Validate</button>
+        <button id="downloadBtn" class="primary" type="button">Download JSON</button>
+        <button id="publishBtn" class="danger" type="button">Publish</button>
+      </div>
+      <pre id="adminLog" class="log"></pre>
+    </section>
+
+    <section class="card full">
+      <span class="badge">Question Manager</span>
+      <h2>Add question</h2>
+      <form id="questionForm" class="question-grid">
+        <label>Question<textarea id="qText" required placeholder="Question text"></textarea></label>
+        <label>Option A<input id="opt0" required /></label>
+        <label>Option B<input id="opt1" required /></label>
+        <label>Option C<input id="opt2" /></label>
+        <label>Option D<input id="opt3" /></label>
+        <label>Correct option
+          <select id="correctIndex"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select>
+        </label>
+        <label>Explanation<textarea id="explanation"></textarea></label>
+        <button class="primary" type="submit">Add Question</button>
+      </form>
+      <div id="questionList" class="review"></div>
+    </section>
+  </main>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

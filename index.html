@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mock Test Complete</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Mock Test Complete</h1>
+      <p>Practice tests with instant scoring, review, and progress tracking.</p>
+    </div>
+    <nav>
+      <a href="index.html">Student</a>
+      <a href="admin.html">Admin</a>
+      <button id="themeToggle" type="button">Dark</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="setup" class="card hero">
+      <div>
+        <span class="badge">Quiz Portal</span>
+        <h2>Start a mock test</h2>
+        <p>Select a quiz, enter student details, and begin. Quiz data can load from local JSON, Firebase Firestore, or Supabase.</p>
+      </div>
+      <form id="startForm" class="form-grid">
+        <label>Student name<input id="studentName" required placeholder="Your name" /></label>
+        <label>Email / Roll no.<input id="studentId" required placeholder="student@example.com" /></label>
+        <label>Quiz source
+          <select id="sourceSelect">
+            <option value="local">Local sample file</option>
+            <option value="firebase">Firebase Firestore</option>
+            <option value="supabase">Supabase</option>
+          </select>
+        </label>
+        <label>Quiz ID<input id="quizId" value="sample-quiz" placeholder="sample-quiz" /></label>
+        <button class="primary" type="submit">Load Quiz</button>
+      </form>
+    </section>
+
+    <section id="quizPanel" class="card hidden">
+      <div class="quiz-head">
+        <div>
+          <span id="quizMeta" class="badge"></span>
+          <h2 id="quizTitle"></h2>
+          <p id="quizDesc"></p>
+        </div>
+        <div class="timer" id="timer">00:00</div>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div id="questionBox"></div>
+      <div class="actions">
+        <button id="prevBtn" type="button">Previous</button>
+        <button id="nextBtn" type="button">Next</button>
+        <button id="submitBtn" class="danger" type="button">Submit Test</button>
+      </div>
+    </section>
+
+    <section id="resultPanel" class="card hidden">
+      <span class="badge">Result</span>
+      <h2 id="scoreText"></h2>
+      <p id="resultSummary"></p>
+      <div id="reviewBox" class="review"></div>
+      <button id="restartBtn" class="primary" type="button">Take another test</button>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
