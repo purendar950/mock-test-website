@@ -1,0 +1,10 @@
+{
+  "sample-quiz": {
+    "id":"sample-quiz","title":"SSC Foundation Mock","description":"Starter mock for StudyPlanner users.","durationMinutes":10,"passingScore":50,
+    "questions":[
+      {"question":"Which planet is called the Red Planet?","options":["Earth","Mars","Venus","Jupiter"],"correctIndex":1,"explanation":"Mars appears reddish due to iron oxide."},
+      {"question":"What is 25% of 200?","options":["25","40","50","75"],"correctIndex":2,"explanation":"One fourth of 200 is 50."},
+      {"question":"Synonym of 'Rapid'?","options":["Slow","Fast","Late","Weak"],"correctIndex":1,"explanation":"Rapid means fast."}
+    ]
+  }
+}

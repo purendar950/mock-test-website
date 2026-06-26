@@ -1,85 +1,10 @@
-import { loadQuizFromFirebase, saveAttemptToFirebase } from './firebase.js';
-import { loadQuizFromSupabase, saveAttemptToSupabase } from './supabase.js';
-
-const $ = s => document.querySelector(s);
-let quiz, current = 0, answers = {}, secondsLeft = 0, timerId = null, student = {};
-
-$('#themeToggle').onclick = () => {
-  const dark = document.documentElement.dataset.theme !== 'dark';
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  $('#themeToggle').textContent = dark ? 'Light' : 'Dark';
-};
-
-$('#startForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  student = { name: $('#studentName').value.trim(), id: $('#studentId').value.trim() };
-  const source = $('#sourceSelect').value;
-  const quizId = $('#quizId').value.trim() || 'sample-quiz';
-  try {
-    quiz = await loadQuiz(source, quizId);
-    validateQuiz(quiz);
-    startQuiz();
-  } catch(err) { alert(err.message); }
-});
-
-async function loadQuiz(source, quizId){
-  if(source === 'firebase') return loadQuizFromFirebase(quizId);
-  if(source === 'supabase') return loadQuizFromSupabase(quizId);
-  const res = await fetch('./data/sample-quiz.json');
-  return res.json();
-}
-
-function validateQuiz(q){
-  if(!q.id || !q.title || !Array.isArray(q.questions) || !q.questions.length) throw new Error('Invalid quiz file.');
-  q.questions.forEach((x,i)=>{
-    if(!x.question || !Array.isArray(x.options) || x.correctIndex === undefined) throw new Error(`Invalid question #${i+1}`);
-  });
-}
-
-function startQuiz(){
-  current = 0; answers = {}; secondsLeft = (quiz.durationMinutes || 15) * 60;
-  $('#setup').classList.add('hidden'); $('#resultPanel').classList.add('hidden'); $('#quizPanel').classList.remove('hidden');
-  $('#quizTitle').textContent = quiz.title;
-  $('#quizDesc').textContent = quiz.description || '';
-  $('#quizMeta').textContent = `${quiz.questions.length} questions • ${quiz.durationMinutes || 15} minutes`;
-  renderQuestion();
-  clearInterval(timerId);
-  timerId = setInterval(tick, 1000); tick();
-}
-
-function tick(){
-  const m = String(Math.floor(secondsLeft/60)).padStart(2,'0');
-  const s = String(secondsLeft%60).padStart(2,'0');
-  $('#timer').textContent = `${m}:${s}`;
-  if(secondsLeft-- <= 0) submitQuiz();
-}
-
-function renderQuestion(){
-  const q = quiz.questions[current];
-  $('#progressBar').style.width = `${((current+1)/quiz.questions.length)*100}%`;
-  $('#questionBox').innerHTML = `<div class="question"><h3>Question ${current+1} of ${quiz.questions.length}</h3><p>${escapeHtml(q.question)}</p>${q.options.map((o,i)=>`<label class="option ${answers[current]===i?'selected':''}"><input type="radio" name="answer" value="${i}" ${answers[current]===i?'checked':''}/><span>${escapeHtml(o)}</span></label>`).join('')}</div>`;
-  document.querySelectorAll('input[name=answer]').forEach(r => r.onchange = e => { answers[current] = Number(e.target.value); renderQuestion(); });
-  $('#prevBtn').disabled = current === 0;
-  $('#nextBtn').disabled = current === quiz.questions.length-1;
-}
-
-$('#prevBtn').onclick = () => { if(current>0){ current--; renderQuestion(); } };
-$('#nextBtn').onclick = () => { if(current<quiz.questions.length-1){ current++; renderQuestion(); } };
-$('#submitBtn').onclick = () => { if(confirm('Submit this test now?')) submitQuiz(); };
-$('#restartBtn').onclick = () => location.reload();
-
-async function submitQuiz(){
-  clearInterval(timerId);
-  let correct = 0;
-  quiz.questions.forEach((q,i)=>{ if(answers[i] === q.correctIndex) correct++; });
-  const percent = Math.round((correct / quiz.questions.length) * 100);
-  $('#quizPanel').classList.add('hidden'); $('#resultPanel').classList.remove('hidden');
-  $('#scoreText').textContent = `${correct}/${quiz.questions.length} correct (${percent}%)`;
-  $('#resultSummary').textContent = percent >= (quiz.passingScore || 50) ? 'Passed. Good job!' : 'Keep practicing and review the explanations below.';
-  $('#reviewBox').innerHTML = quiz.questions.map((q,i)=>`<div class="review-item"><b>Q${i+1}. ${escapeHtml(q.question)}</b><p>Your answer: <span class="${answers[i]===q.correctIndex?'correct':'wrong'}">${answers[i]!==undefined?escapeHtml(q.options[answers[i]]):'Not answered'}</span></p><p>Correct answer: <span class="correct">${escapeHtml(q.options[q.correctIndex])}</span></p>${q.explanation?`<p>${escapeHtml(q.explanation)}</p>`:''}</div>`).join('');
-  const attempt = { quizId: quiz.id, student, answers, score: percent, correct, total: quiz.questions.length };
-  try { await saveAttemptToFirebase(attempt); } catch(_) {}
-  try { await saveAttemptToSupabase(attempt); } catch(_) {}
-}
-
-function escapeHtml(str=''){ return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+import {loadQuizFromFirebase,saveAttemptToFirebase} from './firebase.js';import {loadQuizFromSupabase,saveAttemptToSupabase} from './supabase.js';
+const $=s=>document.querySelector(s);let quiz,cur=0,ans={},left=0,timer,student={};
+$('#startForm').onsubmit=async e=>{e.preventDefault();student={name:$('#studentName').value,id:$('#studentId').value};try{quiz=await load($('#source').value,$('#quizId').value);start()}catch(err){alert(err.message)}};
+async function load(src,id){if(src==='firebase')return loadQuizFromFirebase(id);if(src==='supabase')return loadQuizFromSupabase(id);let r=await fetch('data/quizzes.json');let all=await r.json();return all[id]||all['sample-quiz']}
+function start(){if(!quiz?.questions?.length)throw Error('Invalid quiz');cur=0;ans={};left=(quiz.durationMinutes||10)*60;$('#setup').classList.add('hidden');$('#test').classList.remove('hidden');$('#title').textContent=quiz.title;$('#desc').textContent=quiz.description;$('#meta').textContent=`${quiz.questions.length} questions • ${quiz.durationMinutes} min`;render();clearInterval(timer);timer=setInterval(tick,1000);tick()}
+function tick(){let m=String(Math.floor(left/60)).padStart(2,'0'),s=String(left%60).padStart(2,'0');$('#timer').textContent=`${m}:${s}`;if(left--<=0)finish()}
+function render(){let q=quiz.questions[cur];$('#bar').style.width=((cur+1)/quiz.questions.length*100)+'%';$('#box').innerHTML=`<div class="question"><h3>Question ${cur+1}/${quiz.questions.length}</h3><p>${esc(q.question)}</p>${q.options.map((o,i)=>`<label class="option ${ans[cur]===i?'selected':''}"><input type="radio" name="a" value="${i}" ${ans[cur]===i?'checked':''}> ${esc(o)}</label>`).join('')}</div>`;document.querySelectorAll('[name=a]').forEach(x=>x.onchange=()=>{ans[cur]=+x.value;render()});$('#prev').disabled=cur===0;$('#next').disabled=cur===quiz.questions.length-1}
+$('#prev').onclick=()=>{if(cur>0){cur--;render()}};$('#next').onclick=()=>{if(cur<quiz.questions.length-1){cur++;render()}};$('#submit').onclick=()=>confirm('Submit test?')&&finish();
+async function finish(){clearInterval(timer);let c=0;quiz.questions.forEach((q,i)=>{if(ans[i]===q.correctIndex)c++});let pct=Math.round(c/quiz.questions.length*100);$('#test').classList.add('hidden');$('#result').classList.remove('hidden');$('#score').textContent=`${c}/${quiz.questions.length} correct (${pct}%)`;$('#summary').textContent=pct>=(quiz.passingScore||50)?'Passed. Keep your streak going.':'Review weak areas and reattempt.';$('#review').innerHTML=quiz.questions.map((q,i)=>`<div class="card"><b>Q${i+1}. ${esc(q.question)}</b><p>Your: ${ans[i]!=null?esc(q.options[ans[i]]):'Not answered'}</p><p><b>Correct:</b> ${esc(q.options[q.correctIndex])}</p><p class="sub">${esc(q.explanation||'')}</p></div>`).join('');let attempt={quizId:quiz.id,student,answers:ans,score:pct};try{await saveAttemptToFirebase(attempt)}catch{}try{await saveAttemptToSupabase(attempt)}catch{}}
+function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}

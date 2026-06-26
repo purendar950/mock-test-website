@@ -1,29 +1,7 @@
-import { saveQuizToFirebase } from './firebase.js';
-import { saveQuizToSupabase } from './supabase.js';
-
-const $ = s => document.querySelector(s);
-let quiz = emptyQuiz();
-
-$('#themeToggle').onclick = () => {
-  const dark = document.documentElement.dataset.theme !== 'dark';
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  $('#themeToggle').textContent = dark ? 'Light' : 'Dark';
-};
-
-function emptyQuiz(){ return { id:'sample-quiz', title:'General Knowledge Mock Test', description:'A sample test for practice.', durationMinutes:15, passingScore:50, questions:[] }; }
-function syncMeta(){ quiz.id=$('#adminQuizId').value.trim(); quiz.title=$('#adminTitle').value.trim(); quiz.description=$('#adminDesc').value.trim(); quiz.durationMinutes=Number($('#adminDuration').value)||15; quiz.passingScore=Number($('#adminPass').value)||50; }
-function render(){ syncMeta(); $('#jsonEditor').value = JSON.stringify(quiz,null,2); $('#questionList').innerHTML = quiz.questions.map((q,i)=>`<div class="review-item"><b>${i+1}. ${escapeHtml(q.question)}</b><p>${q.options.map((o,idx)=>`${idx===q.correctIndex?'✅':'○'} ${escapeHtml(o)}`).join('<br>')}</p><button data-del="${i}" type="button">Delete</button></div>`).join(''); document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{quiz.questions.splice(Number(b.dataset.del),1);render();}); }
-function fromEditor(){ quiz = JSON.parse($('#jsonEditor').value); validate(quiz); $('#adminQuizId').value=quiz.id; $('#adminTitle').value=quiz.title; $('#adminDesc').value=quiz.description||''; $('#adminDuration').value=quiz.durationMinutes||15; $('#adminPass').value=quiz.passingScore||50; }
-function validate(q){ if(!q.id||!q.title||!Array.isArray(q.questions)) throw new Error('Quiz must have id, title, and questions array.'); q.questions.forEach((x,i)=>{ if(!x.question||!Array.isArray(x.options)||x.options.length<2||x.correctIndex<0) throw new Error(`Invalid question ${i+1}`); }); return true; }
-function log(msg){ $('#adminLog').textContent = `[${new Date().toLocaleTimeString()}] ${msg}\n` + $('#adminLog').textContent; }
-
-$('#quizForm').addEventListener('input', render);
-$('#questionForm').addEventListener('submit', e=>{ e.preventDefault(); syncMeta(); const opts=[$('#opt0').value,$('#opt1').value,$('#opt2').value,$('#opt3').value].map(x=>x.trim()).filter(Boolean); quiz.questions.push({ question:$('#qText').value.trim(), options:opts, correctIndex:Number($('#correctIndex').value), explanation:$('#explanation').value.trim() }); e.target.reset(); render(); log('Question added.'); });
-$('#fileInput').addEventListener('change', async e=>{ const file=e.target.files[0]; if(!file) return; $('#jsonEditor').value = await file.text(); try{ fromEditor(); render(); log('Quiz file imported.'); }catch(err){ log(err.message); } });
-$('#loadSampleBtn').onclick = async()=>{ const res=await fetch('./data/sample-quiz.json'); quiz=await res.json(); $('#adminQuizId').value=quiz.id; $('#adminTitle').value=quiz.title; $('#adminDesc').value=quiz.description; $('#adminDuration').value=quiz.durationMinutes; $('#adminPass').value=quiz.passingScore; render(); log('Sample quiz loaded.'); };
-$('#validateBtn').onclick=()=>{ try{ fromEditor(); render(); log('Quiz JSON is valid.'); }catch(err){ log(err.message); } };
-$('#downloadBtn').onclick=()=>{ try{ fromEditor(); const blob=new Blob([JSON.stringify(quiz,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${quiz.id}.json`; a.click(); log('Quiz JSON downloaded.'); }catch(err){ log(err.message); } };
-$('#publishBtn').onclick=async()=>{ try{ fromEditor(); const target=$('#adminTarget').value; if(target==='download') return log('Choose Firebase or Supabase to publish, or use Download JSON.'); if(target==='firebase') await saveQuizToFirebase(quiz); if(target==='supabase') await saveQuizToSupabase(quiz); log(`Published ${quiz.id} to ${target}.`); }catch(err){ log(err.message); } };
-
-function escapeHtml(str=''){ return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-render();
+import {saveQuizToFirebase} from './firebase.js';import {saveQuizToSupabase} from './supabase.js';const $=s=>document.querySelector(s);let quiz={id:'sample-quiz',title:'SSC Foundation Mock',description:'Starter mock for StudyPlanner users.',durationMinutes:10,passingScore:50,questions:[]};
+function sync(){quiz.id=$('#qid').value;quiz.title=$('#qtitle').value;quiz.description=$('#qdesc').value;quiz.durationMinutes=+$('#duration').value||10;quiz.passingScore=+$('#pass').value||50}
+function draw(){sync();$('#json').value=JSON.stringify(quiz,null,2);$('#list').innerHTML=quiz.questions.map((q,i)=>`<div class="card"><b>${i+1}. ${q.question}</b><p>${q.options.join(' / ')}</p><button data-i="${i}">Delete</button></div>`).join('');document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{quiz.questions.splice(+b.dataset.i,1);draw()})}
+function parse(){quiz=JSON.parse($('#json').value);if(!quiz.id||!Array.isArray(quiz.questions))throw Error('Invalid quiz JSON');$('#qid').value=quiz.id;$('#qtitle').value=quiz.title;$('#qdesc').value=quiz.description||'';$('#duration').value=quiz.durationMinutes||10;$('#pass').value=quiz.passingScore||50}
+function log(x){$('#log').textContent=`${new Date().toLocaleTimeString()} ${x}\n`+$('#log').textContent}
+$('#meta').oninput=draw;$('#qform').onsubmit=e=>{e.preventDefault();sync();let opts=[$('#o0').value,$('#o1').value,$('#o2').value,$('#o3').value].filter(Boolean);quiz.questions.push({question:$('#qt').value,options:opts,correctIndex:+$('#ci').value,explanation:$('#exp').value});e.target.reset();draw();log('Question added')};
+$('#file').onchange=async e=>{let f=e.target.files[0];if(!f)return;$('#json').value=await f.text();parse();draw();log('Imported file')};$('#sample').onclick=async()=>{let r=await fetch('data/quizzes.json');quiz=(await r.json())['sample-quiz'];draw();log('Loaded sample')};$('#validate').onclick=()=>{try{parse();draw();log('Valid JSON')}catch(e){log(e.message)}};$('#download').onclick=()=>{parse();let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(quiz,null,2)],{type:'application/json'}));a.download=quiz.id+'.json';a.click();log('Downloaded')};$('#publish').onclick=async()=>{try{parse();let t=$('#target').value;if(t==='firebase')await saveQuizToFirebase(quiz);else if(t==='supabase')await saveQuizToSupabase(quiz);else return $('#download').click();log('Published to '+t)}catch(e){log(e.message)}};draw();
