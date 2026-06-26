@@ -35,3 +35,19 @@ Replace placeholders in:
 - `supabase.js`
 
 Use only public Firebase web config and Supabase anon key in frontend code. Add secure admin authentication before production.
+
+## Architecture upgrade from uploaded analysis
+
+Added:
+- Firebase Auth-ready `login.html`, `auth.js`, and `profile.html`
+- PWA `manifest.json` and `sw.js`
+- Result page placeholder for attempt history
+- Premium guard pattern using `users/{uid}.isPremium`
+- Detailed Firestore architecture in `docs/architecture.md`
+- Payment-ready notes for Razorpay/Cashfree via secure Cloud Function
+
+Recommended production rules:
+- Allow public read only for free test metadata.
+- Require authenticated premium users for premium question documents.
+- Require admin custom claims for quiz uploads.
+- Never put Razorpay/Cashfree secret keys in frontend JavaScript.
